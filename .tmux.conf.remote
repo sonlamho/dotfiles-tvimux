@@ -1,0 +1,7 @@
+
+# make colors available
+set -g default-terminal "screen-256color"
+
+# Bind to reload config
+bind-key r source-file ~/.tmux.conf \; display-message "~/.tmux.conf reloaded"
+

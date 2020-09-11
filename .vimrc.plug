@@ -1,0 +1,38 @@
+call plug#begin()
+
+" Core
+" YCM requires cmake, python3-dev, build-essential, clangd
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py --rust-completer --ts-completer --java-completer --clangd-completer '  }
+Plug 'dense-analysis/ale'
+Plug 'airblade/vim-rooter'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+Plug 'pangloss/vim-javascript'
+Plug 'vim-python/python-syntax'
+Plug 'jiangmiao/auto-pairs'
+Plug 'tpope/vim-commentary'
+Plug 'alvan/vim-closetag'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-repeat'
+Plug 'valloric/matchtagalways'
+Plug 'mileszs/ack.vim'
+Plug 'justinmk/vim-sneak'
+
+" functional UIs enhancement
+" Plug 'tpope/vim-fugitive'
+Plug 'preservim/NERDTree'
+Plug 'machakann/vim-highlightedyank'
+Plug 'bronson/vim-trailing-whitespace'
+Plug 'Yggdroot/indentLine'
+Plug 'airblade/vim-gitgutter'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+" Colorschemes
+Plug 'morhetz/gruvbox'
+Plug 'arcticicestudio/nord-vim'
+Plug 'tomasr/molokai'
+Plug 'sonph/onehalf', {'rtp': 'vim/'}
+
+call plug#end()
+
