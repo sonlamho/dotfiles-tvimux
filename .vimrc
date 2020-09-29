@@ -10,7 +10,8 @@ if has("autocmd")
   augroup vimrcEx
   au!
   " For all text files set 'textwidth' to 78 characters.
-  " autocmd FileType text setlocal textwidth=78
+  autocmd FileType text setlocal textwidth=80
+  autocmd FileType markdown setlocal textwidth=80
   augroup END
 else
   set autoindent		" always set autoindenting on
@@ -71,6 +72,7 @@ nnoremap <F5> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>
 
 " Ctrl-s to save file
 nnoremap <C-s> :update<CR>
+inoremap <C-s> <Esc>:update<CR>
 
 " Switch panes and tabs better
 nnoremap <C-h> :wincmd h<CR>
@@ -103,8 +105,21 @@ function! SaveSessionAndQuit()
   qall
 endfunction
 
+function! Set4Spaces()
+  let g:python_recommended_style = 1
+  set expandtab         "Use 2 spaces for tabs
+  set shiftwidth=4
+  set softtabstop=4
+  set tabstop=4
+  filetype plugin indent on
+endfunction
+
 " set <Leader>
 let mapleader = " "
+let maplocalleader = "\\"
+
+" 4spaces
+nnoremap <Leader>4 :call Set4Spaces()<CR>
 
 " Scrolling
 nnoremap <Leader>j 30<C-e>
@@ -114,10 +129,10 @@ nnoremap <Leader>k 30<C-y>
 nnoremap <Leader>l :lopen<CR>
 
 " Quick open vimrc to edit
-nnoremap <Leader>vrc :tabnew<CR>:e ~/.vimrc<CR>:vsplit<CR>:e ~/.vimrc.plug<CR>:vsplit<CR>:e ~/.config/alacritty/alacritty.yml<CR>
+nnoremap <Leader>vrc :tabnew<CR>:e ~/dotfiles/.vimrc<CR>:vsplit<CR>:e ~/dotfiles/.vimrc.plug<CR>:vsplit<CR>:e ~/.config/alacritty/alacritty.yml<CR>
 
 " Quick session save and closing
-nnoremap <Leader>x :CloseHiddenBuffers<CR>:call SaveSessionAndQuit()<CR>
+nnoremap <Leader>x :tabdo NERDTreeClose<CR>:CloseHiddenBuffers<CR>:call SaveSessionAndQuit()<CR>
 nnoremap <Leader>qa :tabclose<CR>
 
 " Call the .vimrc.plug file
@@ -126,11 +141,19 @@ if filereadable(expand("~/.vimrc.plug"))
   source ~/.vimrc.plug
 
   " SETTINGS FOR PLUGINS:
-  nnoremap <C-s> :update<CR>:GitGutterAll<CR>
-  let g:indentLine_char = '▏'
   colorscheme delek
   let g:airline_theme='bubblegum'
+  nnoremap <C-s> :update<CR>:GitGutterAll<CR>
+  let g:indentLine_char = '▏'
   let g:airline#extensions#tabline#enabled = 1
+  let g:rooter_silent_chdir = 1
+
+  " jupyter-vim
+  let g:jupyter_mapkeys = 0
+  nnoremap <LocalLeader>cj :JupyterConnect<CR><CR>:JupyterCd %:p:h<CR>
+  nnoremap <LocalLeader>p<CR> vip:JupyterSendRange<CR>
+  nnoremap <LocalLeader><CR> :JupyterSendCell<CR>
+
 
   " python syntax
   let g:python_highlight_string_formatting = 1
@@ -141,7 +164,8 @@ if filereadable(expand("~/.vimrc.plug"))
   let g:python_highlight_all = 0
   " let g:python_highlight_exceptions = 1
 
-  nnoremap <Leader>\ :NERDTreeToggle<CR>
+  nnoremap <Leader>\ :NERDTreeToggle<CR>:NERDTreeRefreshRoot<CR>
+  let g:NERDTreeShowHidden=1
 
   " Use ag instead of ack if available
   if executable('ag')
@@ -166,20 +190,20 @@ if filereadable(expand("~/.vimrc.plug"))
   nnoremap <Leader>[ :ALEPreviousWrap<CR>
   nnoremap <Leader>] :ALENextWrap<CR>
   nnoremap <Leader><F7> :ALEToggleBuffer<CR>
-  let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
+  let g:ale_echo_msg_format = '[%linter%][%code%] %s [%severity%]'
   let g:ale_linters_explicit = 0
   let g:ale_linters = {
   \ 'python': ['mypy','flake8'],
   \ 'ruby': ['rubocop', 'ruby'],
   \ 'rust': ['cargo'],
   \ }
-  highlight ALEWarning ctermbg=black
+  highlight ALEWarning ctermbg=8 cterm=underline
 
 else
   colorscheme delek
 endif
 
 set colorcolumn=80    " A line at column 80
-highlight ColorColumn ctermbg=0 guibg=lightgrey
-hi VertSplit guibg=lightgrey guifg=lightgrey ctermbg=0 ctermfg=0
+highlight ColorColumn ctermbg=0 guibg=darkgrey
+hi VertSplit guibg=bg guifg=bg ctermbg=black ctermfg=darkgrey
 hi MatchParen cterm=underline ctermbg=0 ctermfg=white
