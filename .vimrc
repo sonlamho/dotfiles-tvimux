@@ -9,7 +9,7 @@ if has("autocmd")
   " Put these in an autocmd group, so that we can delete them easily.
   augroup vimrcEx
   au!
-  " For all text files set 'textwidth' to 78 characters.
+  " For all text files set 'textwidth' to 80 characters.
   autocmd FileType text setlocal textwidth=80
   autocmd FileType markdown setlocal textwidth=80
   augroup END
@@ -41,14 +41,16 @@ set softtabstop=2
 set tabstop=2
 set ruler
 set number
-set relativenumber    "Very slow on ruby files for some reason
+set relativenumber
+set cursorline
 set re=1              "Use the old regex engine which is faster ...
 set ignorecase
+set background=dark
+set colorcolumn=88    " A line at column 88
 set smartcase
 set wrap
 set textwidth=0
 set formatoptions-=t  " No auto line breaks
-set background=dark
 " if has('termguicolors')
 "   hi Normal guibg=NONE ctermbg=NONE
 " endif
@@ -63,9 +65,8 @@ nnoremap <C-n> :tabnew<CR>
 " Ignore python's 4-space indent guideline
 let g:python_recommended_style = 0
 filetype plugin indent on
-" Don't use relnumbering for ruby files
 " autocmd FileType ruby setlocal ts=2 sts=2 sw=2 norelativenumber nocursorline
-autocmd FileType ruby setlocal ts=2 sts=2 sw=2 nocursorline
+autocmd FileType ruby setlocal ts=2 sts=2 sw=2
 
 "Remove all trailing whitespace by pressing F5
 nnoremap <F5> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>
@@ -107,7 +108,7 @@ endfunction
 
 function! Set4Spaces()
   let g:python_recommended_style = 1
-  set expandtab         "Use 2 spaces for tabs
+  set expandtab         "Use spaces for tabs
   set shiftwidth=4
   set softtabstop=4
   set tabstop=4
@@ -117,6 +118,10 @@ endfunction
 " set <Leader>
 let mapleader = " "
 let maplocalleader = "\\"
+
+" nav buffers
+nnoremap <Leader><PageUp> :bprevious<CR>
+nnoremap <Leader><PageDown> :bnext<CR>
 
 " 4spaces
 nnoremap <Leader>4 :call Set4Spaces()<CR>
@@ -129,7 +134,7 @@ nnoremap <Leader>k 30<C-y>
 nnoremap <Leader>l :lopen<CR>
 
 " Quick open vimrc to edit
-nnoremap <Leader>vrc :tabnew<CR>:e ~/dotfiles/.vimrc<CR>:vsplit<CR>:e ~/dotfiles/.vimrc.plug<CR>:vsplit<CR>:e ~/.config/alacritty/alacritty.yml<CR>
+nnoremap <Leader>vrc :tabnew<Bar>:e ~/dotfiles/.vimrc<Bar>:vsplit<Bar>:e ~/dotfiles/.vimrc.plug<Bar>:vsplit<Bar>:e ~/.config/alacritty/alacritty.yml<CR>
 
 " Quick session save and closing
 nnoremap <Leader>x :tabdo NERDTreeClose<CR>:CloseHiddenBuffers<CR>:call SaveSessionAndQuit()<CR>
@@ -140,10 +145,10 @@ nnoremap <Leader>qa :tabclose<CR>
 if filereadable(expand("~/.vimrc.plug"))
   source ~/.vimrc.plug
 
+
   " SETTINGS FOR PLUGINS:
-  colorscheme delek
   let g:airline_theme='bubblegum'
-  nnoremap <C-s> :update<CR>:GitGutterAll<CR>
+  nnoremap <C-s> :update<Bar>:GitGutterAll<CR>
   let g:indentLine_char = '▏'
   let g:airline#extensions#tabline#enabled = 1
   let g:rooter_silent_chdir = 1
@@ -155,14 +160,18 @@ if filereadable(expand("~/.vimrc.plug"))
   nnoremap <LocalLeader><CR> :JupyterSendCell<CR>
 
 
-  " python syntax
+  " python syntax highlighting
+  hi link pythonClassVar Structure
+  hi link pythonNone Identifier
+  hi link pythonBoolean Identifier
   let g:python_highlight_string_formatting = 1
   let g:python_highlight_string_format = 1
   let g:python_highlight_string_templates = 1
   let g:python_highlight_class_vars = 1
   let g:python_highlight_builtins = 1
+  let g:python_highlight_exceptions = 1
+  let g:python_highlight_operators = 1
   let g:python_highlight_all = 0
-  " let g:python_highlight_exceptions = 1
 
   nnoremap <Leader>\ :NERDTreeToggle<CR>:NERDTreeRefreshRoot<CR>
   let g:NERDTreeShowHidden=1
@@ -199,11 +208,17 @@ if filereadable(expand("~/.vimrc.plug"))
   \ }
   highlight ALEWarning ctermbg=8 cterm=underline
 
+  " colorscheme and modifications:
+  colorscheme delek
+  hi Number ctermfg=magenta guifg=magenta
 else
   colorscheme delek
+  hi Number ctermfg=magenta guifg=magenta
 endif
 
-set colorcolumn=80    " A line at column 80
-highlight ColorColumn ctermbg=0 guibg=darkgrey
+hi ColorColumn ctermbg=black guibg=darkgrey
+hi CursorLine cterm=None ctermbg=black guibg=darkgrey
+hi Comment cterm=italic ctermfg=darkgrey
+hi LineNr cterm=bold ctermfg=darkgrey
 hi VertSplit guibg=bg guifg=bg ctermbg=black ctermfg=darkgrey
-hi MatchParen cterm=underline ctermbg=0 ctermfg=white
+hi MatchParen cterm=bold,italic,underline ctermbg=black ctermfg=yellow

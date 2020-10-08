@@ -20,7 +20,7 @@ Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
 Plug 'jupyter-vim/jupyter-vim'
 
-" functional UIs enhancement
+" functional and UIs enhancement
 Plug 'tpope/vim-fugitive'
 Plug 'preservim/NERDTree'
 Plug 'machakann/vim-highlightedyank'
