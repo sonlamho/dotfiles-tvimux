@@ -13,6 +13,18 @@ if has("autocmd")
   autocmd FileType text setlocal textwidth=80
   autocmd FileType markdown setlocal textwidth=80
   augroup END
+
+  augroup CPT
+  au!
+  au BufReadPre  *.cpt setl bin viminfo= noswapfile nobackup noundofile
+  au BufReadPost *.cpt let $CPT_PASS = inputsecret("Password: ")
+  au BufReadPost *.cpt silent 1,$!ccrypt -cb -E CPT_PASS
+  au BufReadPost *.cpt set nobin
+  au BufWritePre *.cpt set bin
+  au BufWritePre *.cpt silent! 1,$!ccrypt -e -E CPT_PASS
+  au BufWritePost *.cpt silent! u
+  au BufWritePost *.cpt set nobin
+  augroup END
 else
   set autoindent		" always set autoindenting on
 endif " has("autocmd")
@@ -48,7 +60,7 @@ set ignorecase
 set background=dark
 set colorcolumn=88    " A line at column 88
 set smartcase
-set wrap
+set nowrap
 set textwidth=0
 set formatoptions-=t  " No auto line breaks
 " if has('termguicolors')
@@ -62,14 +74,15 @@ vnoremap > >gv
 " Ctrl-N to create new empty tab
 nnoremap <C-n> :tabnew<CR>
 
-" Ignore python's 4-space indent guideline
-let g:python_recommended_style = 0
+" Set below to 0 to ignore python's 4-space indent guideline
+let g:python_recommended_style = 1
 filetype plugin indent on
-" autocmd FileType ruby setlocal ts=2 sts=2 sw=2 norelativenumber nocursorline
 autocmd FileType ruby setlocal ts=2 sts=2 sw=2
+autocmd FileType julia setlocal ts=4 sts=4 sw=4
 
 "Remove all trailing whitespace by pressing F5
-nnoremap <F5> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>
+" nnoremap <F5> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>
+nnoremap <F5> :ALEFix<CR>
 
 " Ctrl-s to save file
 nnoremap <C-s> :update<CR>
@@ -115,6 +128,15 @@ function! Set4Spaces()
   filetype plugin indent on
 endfunction
 
+function! SetDelek()
+  colorscheme delek
+  highlight Number ctermfg=magenta guifg=magenta
+  highlight String cterm=italic ctermfg=2 guifg=green3
+  highlight Function cterm=italic ctermfg=6 guifg=cyan4
+  highlight pythonClass ctermfg=12 guifg=blue
+  highlight pythonStatement cterm=bold ctermfg=5 guifg=magenta3
+endfunction
+
 " set <Leader>
 let mapleader = " "
 let maplocalleader = "\\"
@@ -127,8 +149,8 @@ nnoremap <Leader><PageDown> :bnext<CR>
 nnoremap <Leader>4 :call Set4Spaces()<CR>
 
 " Scrolling
-nnoremap <Leader>j 30<C-e>
-nnoremap <Leader>k 30<C-y>
+" nnoremap <Leader>j 30<C-e>
+" nnoremap <Leader>k 30<C-y>
 
 " Quick open location list
 nnoremap <Leader>l :lopen<CR>
@@ -137,7 +159,7 @@ nnoremap <Leader>l :lopen<CR>
 nnoremap <Leader>vrc :tabnew<Bar>:e ~/dotfiles/.vimrc<Bar>:vsplit<Bar>:e ~/dotfiles/.vimrc.plug<Bar>:vsplit<Bar>:e ~/.config/alacritty/alacritty.yml<CR>
 
 " Quick session save and closing
-nnoremap <Leader>x :tabdo NERDTreeClose<CR>:CloseHiddenBuffers<CR>:call SaveSessionAndQuit()<CR>
+nnoremap <Leader>x :tabdo NERDTreeClose<CR>:CloseHiddenBuffers<CR>:tabfirst<CR>:call SaveSessionAndQuit()<CR>
 nnoremap <Leader>qa :tabclose<CR>
 
 " Call the .vimrc.plug file
@@ -164,6 +186,7 @@ if filereadable(expand("~/.vimrc.plug"))
   hi link pythonClassVar Structure
   hi link pythonNone Identifier
   hi link pythonBoolean Identifier
+  hi link pythonFunctionCall Identifier
   let g:python_highlight_string_formatting = 1
   let g:python_highlight_string_format = 1
   let g:python_highlight_string_templates = 1
@@ -171,7 +194,7 @@ if filereadable(expand("~/.vimrc.plug"))
   let g:python_highlight_builtins = 1
   let g:python_highlight_exceptions = 1
   let g:python_highlight_operators = 1
-  let g:python_highlight_all = 0
+  let g:python_highlight_all = 1
 
   nnoremap <Leader>\ :NERDTreeToggle<CR>:NERDTreeRefreshRoot<CR>
   let g:NERDTreeShowHidden=1
@@ -206,19 +229,25 @@ if filereadable(expand("~/.vimrc.plug"))
   \ 'ruby': ['rubocop', 'ruby'],
   \ 'rust': ['cargo'],
   \ }
+  let g:ale_fixers = {
+  \   '*': [],
+  \   'javascript': ['eslint'],
+  \   'python': ['black'],
+  \}
   highlight ALEWarning ctermbg=8 cterm=underline
 
   " colorscheme and modifications:
-  colorscheme delek
-  hi Number ctermfg=magenta guifg=magenta
+  call SetDelek()
 else
-  colorscheme delek
-  hi Number ctermfg=magenta guifg=magenta
+  call SetDelek()
 endif
 
+" Set some highlighting options
+hi diffAdded ctermfg=green
+hi diffRemoved ctermfg=darkred
 hi ColorColumn ctermbg=black guibg=darkgrey
 hi CursorLine cterm=None ctermbg=black guibg=darkgrey
-hi Comment cterm=italic ctermfg=darkgrey
-hi LineNr cterm=bold ctermfg=darkgrey
+hi Comment cterm=italic,bold ctermfg=darkgrey
+hi LineNr ctermfg=darkgrey
 hi VertSplit guibg=bg guifg=bg ctermbg=black ctermfg=darkgrey
 hi MatchParen cterm=bold,italic,underline ctermbg=black ctermfg=yellow

@@ -1,7 +1,12 @@
 
+set-window-option -g mode-keys vi
+bind-key -T copy-mode-vi 'v' send -X begin-selection
+
 # make colors available
 set -g default-terminal "screen-256color"
 
+# neovim wants small escape time?
+set-option -sg escape-time 20
+
 # Bind to reload config
 bind-key r source-file ~/.tmux.conf \; display-message "~/.tmux.conf reloaded"
-
