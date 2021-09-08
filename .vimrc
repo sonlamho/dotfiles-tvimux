@@ -46,6 +46,8 @@ if !isdirectory(&directory) | call mkdir(&directory, "p") | endif
 " Editor settings
 " set autoread
 syntax on
+filetype plugin indent on
+set updatetime=3000
 set scrolloff=10      "default=5 makes cursor too close to edges
 set expandtab         "Use 2 spaces for tabs
 set shiftwidth=2
@@ -76,13 +78,13 @@ nnoremap <C-n> :tabnew<CR>
 
 " Set below to 0 to ignore python's 4-space indent guideline
 let g:python_recommended_style = 1
-filetype plugin indent on
 autocmd FileType ruby setlocal ts=2 sts=2 sw=2
 autocmd FileType julia setlocal ts=4 sts=4 sw=4
 
 "Remove all trailing whitespace by pressing F5
 " nnoremap <F5> :let _s=@/<Bar>:%s/\s\+$//e<Bar>:let @/=_s<Bar><CR>
-nnoremap <F5> :ALEFix<CR>
+nnoremap <F5> :ALEFix<CR>:update<CR>
+inoremap <F5> <Esc>:ALEFix<CR>:update<CR>
 
 " Ctrl-s to save file
 nnoremap <C-s> :update<CR>
@@ -94,6 +96,9 @@ nnoremap <C-l> :wincmd l<CR>
 nnoremap <C-j> :wincmd j<CR>
 nnoremap <C-k> :wincmd k<CR>
 nnoremap gb :tabprevious<CR>
+
+" in normal mode, Esc will close preview window
+nnoremap <Esc> :pclose<CR>
 
 
 command! CloseHiddenBuffers call s:CloseHiddenBuffers()
@@ -128,13 +133,25 @@ function! Set4Spaces()
   filetype plugin indent on
 endfunction
 
-function! SetDelek()
+function! SetCustomDelek()
   colorscheme delek
-  highlight Number ctermfg=magenta guifg=magenta
-  highlight String cterm=italic ctermfg=2 guifg=green3
-  highlight Function cterm=italic ctermfg=6 guifg=cyan4
-  highlight pythonClass ctermfg=12 guifg=blue
-  highlight pythonStatement cterm=bold ctermfg=5 guifg=magenta3
+  hi ColorColumn ctermbg=black guibg=darkgrey
+  hi CursorLine cterm=None ctermbg=black guibg=darkgrey
+  hi Comment cterm=italic,bold ctermfg=darkgrey
+  hi LineNr ctermfg=darkgrey
+  hi VertSplit guibg=bg guifg=bg ctermbg=black ctermfg=darkgrey
+  hi MatchParen cterm=bold,italic,underline ctermbg=black ctermfg=yellow
+  hi Number ctermfg=magenta guifg=magenta
+  hi String ctermfg=2 guifg=green3
+  hi Function cterm=italic ctermfg=6 guifg=cyan4
+
+  hi pythonFunctionCall ctermfg=6 guifg=cyan4
+  hi pythonClass ctermfg=12 guifg=blue
+  hi pythonStatement cterm=bold ctermfg=5 guifg=magenta3
+  hi link pythonClassVar Structure
+  hi link pythonNone Number
+  hi link pythonBoolean Number
+  hi link pythonFunctionCall Identifier
 endfunction
 
 " set <Leader>
@@ -146,11 +163,7 @@ nnoremap <Leader><PageUp> :bprevious<CR>
 nnoremap <Leader><PageDown> :bnext<CR>
 
 " 4spaces
-nnoremap <Leader>4 :call Set4Spaces()<CR>
-
-" Scrolling
-" nnoremap <Leader>j 30<C-e>
-" nnoremap <Leader>k 30<C-y>
+" nnoremap <Leader>4 :call Set4Spaces()<CR>
 
 " Quick open location list
 nnoremap <Leader>l :lopen<CR>
@@ -183,10 +196,6 @@ if filereadable(expand("~/.vimrc.plug"))
 
 
   " python syntax highlighting
-  hi link pythonClassVar Structure
-  hi link pythonNone Identifier
-  hi link pythonBoolean Identifier
-  hi link pythonFunctionCall Identifier
   let g:python_highlight_string_formatting = 1
   let g:python_highlight_string_format = 1
   let g:python_highlight_string_templates = 1
@@ -196,7 +205,7 @@ if filereadable(expand("~/.vimrc.plug"))
   let g:python_highlight_operators = 1
   let g:python_highlight_all = 1
 
-  nnoremap <Leader>\ :NERDTreeToggle<CR>:NERDTreeRefreshRoot<CR>
+  nnoremap <Leader>\ :NERDTreeToggle<CR>:NERDTreeRefreshRoot<CR><C-w>=
   let g:NERDTreeShowHidden=1
 
   " Use ag instead of ack if available
@@ -209,14 +218,26 @@ if filereadable(expand("~/.vimrc.plug"))
 
   " YCM
   " Do `rustup component add rls rust-analysis rust-src` to make rust completion work
+  let g:ycm_filetype_whitelist = {'python': 1}
   let g:ycm_clangd_binary_path = '/usr/bin/clangd'
   let g:ycm_add_preview_to_completeopt = 1
-  let g:ycm_autoclose_preview_window_after_insertion = 1
+  let g:ycm_autoclose_preview_window_after_insertion = 0
   " let g:ycm_min_num_identifier_candidate_chars = 1
-  nnoremap <C-@> :YcmCompleter GetDoc<CR>
   nnoremap <C-space> :YcmCompleter GetDoc<CR>
+  inoremap <C-space> <Esc>:YcmCompleter GetDoc<CR>a
   nnoremap <Leader>gd :YcmCompleter GoToDefinition<CR>
   nnoremap <Leader>gr :YcmCompleter GoToReferences<CR>
+  nnoremap <Leader>t :YcmCompleter GetType<CR>
+
+  let g:ycm_language_server =
+    \ [
+    \   {
+    \     'name': 'ruby',
+    \     'filetypes': [ 'ruby' ],
+    \     'port': 7658,
+    \     'project_root_files': [ 'Gemfile.lock' ]
+    \   },
+    \ ]
 
   " ALE
   nnoremap <Leader>[ :ALEPreviousWrap<CR>
@@ -234,20 +255,14 @@ if filereadable(expand("~/.vimrc.plug"))
   \   'javascript': ['eslint'],
   \   'python': ['black'],
   \}
-  highlight ALEWarning ctermbg=8 cterm=underline
 
   " colorscheme and modifications:
-  call SetDelek()
+  highlight ALEWarning ctermbg=8 cterm=underline
+  call SetCustomDelek()
 else
-  call SetDelek()
+  colorscheme peachpuff
 endif
 
-" Set some highlighting options
+" Set some global highlighting options
 hi diffAdded ctermfg=green
 hi diffRemoved ctermfg=darkred
-hi ColorColumn ctermbg=black guibg=darkgrey
-hi CursorLine cterm=None ctermbg=black guibg=darkgrey
-hi Comment cterm=italic,bold ctermfg=darkgrey
-hi LineNr ctermfg=darkgrey
-hi VertSplit guibg=bg guifg=bg ctermbg=black ctermfg=darkgrey
-hi MatchParen cterm=bold,italic,underline ctermbg=black ctermfg=yellow

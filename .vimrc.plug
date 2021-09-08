@@ -1,27 +1,31 @@
 call plug#begin()
 
 " Core
+Plug 'neovim/nvim-lspconfig'
+
 " YCM requires cmake, python3-dev, build-essential, clangd
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py --rust-completer --ts-completer --java-completer --clangd-completer '  }
+Plug 'Valloric/YouCompleteMe', { 'do': './install.py --rust-completer --ts-completer --java-completer --clangd-completer ' }
 Plug 'dense-analysis/ale'
 Plug 'airblade/vim-rooter'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'pangloss/vim-javascript'
 Plug 'vim-python/python-syntax'
+Plug 'neovimhaskell/haskell-vim'
+Plug 'vlime/vlime', {'rtp': 'vim/'}
 Plug 'lepture/vim-jinja'
 Plug 'tpope/vim-commentary'
 Plug 'alvan/vim-closetag'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
+Plug 'tmsvg/pear-tree'
 Plug 'valloric/matchtagalways'
 Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
 Plug 'jupyter-vim/jupyter-vim'
 Plug 'JuliaEditorSupport/julia-vim'
-" Plug 'jiangmiao/auto-pairs'
 
-" functional and UIs enhancement
+" functionalities and UIs enhancement
 Plug 'tpope/vim-fugitive'
 Plug 'preservim/NERDTree'
 Plug 'machakann/vim-highlightedyank'
