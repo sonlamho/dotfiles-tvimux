@@ -12,7 +12,6 @@ Plug 'junegunn/fzf.vim'
 Plug 'pangloss/vim-javascript'
 Plug 'vim-python/python-syntax'
 Plug 'neovimhaskell/haskell-vim'
-Plug 'vlime/vlime', {'rtp': 'vim/'}
 Plug 'lepture/vim-jinja'
 Plug 'tpope/vim-commentary'
 Plug 'alvan/vim-closetag'
@@ -22,8 +21,11 @@ Plug 'tmsvg/pear-tree'
 Plug 'valloric/matchtagalways'
 Plug 'mileszs/ack.vim'
 Plug 'justinmk/vim-sneak'
-Plug 'jupyter-vim/jupyter-vim'
 Plug 'JuliaEditorSupport/julia-vim'
+Plug 'tpope/vim-fireplace'
+Plug 'Olical/conjure', {'tag': 'v4.23.0'}
+Plug 'clojure-vim/async-clj-omni'
+Plug 'jpalardy/vim-slime'
 
 " functionalities and UIs enhancement
 Plug 'tpope/vim-fugitive'
@@ -40,6 +42,15 @@ Plug 'morhetz/gruvbox'
 Plug 'arcticicestudio/nord-vim'
 Plug 'tomasr/molokai'
 Plug 'sonph/onehalf', {'rtp': 'vim/'}
+
+if has('nvim')
+  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+else
+  Plug 'Shougo/deoplete.nvim'
+  Plug 'roxma/nvim-yarp'
+  Plug 'roxma/vim-hug-neovim-rpc'
+endif
+let g:deoplete#enable_at_startup = 1
 
 call plug#end()
 

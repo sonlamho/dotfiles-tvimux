@@ -14,6 +14,18 @@ if has("autocmd")
   autocmd FileType markdown setlocal textwidth=80
   augroup END
 
+  augroup ZCPT
+  au!
+  au BufReadPre  *.zcpt setl bin viminfo= noswapfile nobackup noundofile
+  au BufReadPost *.zcpt let $CPT_PASS = inputsecret("Password: ")
+  au BufReadPost *.zcpt silent 1,$!ccrypt -cb -E CPT_PASS | gzip -cd
+  au BufReadPost *.zcpt set nobin
+  au BufWritePre *.zcpt set bin
+  au BufWritePre *.zcpt silent! 1,$!gzip -c | ccrypt -e -E CPT_PASS
+  au BufWritePost *.zcpt silent! u
+  au BufWritePost *.zcpt set nobin
+  augroup END
+
   augroup CPT
   au!
   au BufReadPre  *.cpt setl bin viminfo= noswapfile nobackup noundofile
@@ -55,7 +67,7 @@ set softtabstop=2
 set tabstop=2
 set ruler
 set number
-set relativenumber
+" set relativenumber
 set cursorline
 set re=1              "Use the old regex engine which is faster ...
 set ignorecase
@@ -124,15 +136,6 @@ function! SaveSessionAndQuit()
   qall
 endfunction
 
-function! Set4Spaces()
-  let g:python_recommended_style = 1
-  set expandtab         "Use spaces for tabs
-  set shiftwidth=4
-  set softtabstop=4
-  set tabstop=4
-  filetype plugin indent on
-endfunction
-
 function! SetCustomDelek()
   colorscheme delek
   hi ColorColumn ctermbg=black guibg=darkgrey
@@ -152,6 +155,52 @@ function! SetCustomDelek()
   hi link pythonNone Number
   hi link pythonBoolean Number
   hi link pythonFunctionCall Identifier
+
+  hi Pmenu ctermfg=white ctermbg=black guibg=LightBlue
+  hi PmenuSel ctermfg=white ctermbg=darkblue guifg=White guibg=DarkBlue
+  hi PmenuSbar ctermbg=darkgrey guibg=DarkGrey
+endfunction
+
+function! SetSlimeKeys()
+  let g:slime_no_mappings	= 1
+  nmap <localleader>es <Plug>SlimeSendCell
+  nmap <localleader>er <Plug>SlimeParagraphSend
+  nmap <localleader>ee <Plug>SlimeLineSend
+  xmap <localleader>E <Plug>SlimeRegionSend
+  nmap <localleader>E <Plug>SlimeMotionSend
+  nmap <localleader>ew viw<localleader>E
+  nmap <localleader>eb ggVG<localleader>E<C-o>
+endfunction
+
+function! SetREPLKeys()
+  " Olical Conjure settings
+  let g:conjure#filetypes = ["clojure", "fennel", "janet", "racket", "scheme"]
+
+  " Slime settings: mapped to match with Olical Conjure's default
+  let g:slime_target = "neovim"
+  let g:slime_python_ipython = 1
+  let g:slime_cell_delimiter = "##"
+  autocmd FileType * if index(g:conjure#filetypes, &ft) < 0 | call SetSlimeKeys() | endif
+endfunction
+
+function! SetupYCMKeys()
+  nnoremap <C-space> :YcmCompleter GetDoc<CR>
+  inoremap <C-space> <Esc>:YcmCompleter GetDoc<CR>a
+  nnoremap <Leader>gd :YcmCompleter GoToDefinition<CR>
+  nnoremap <Leader>gr :YcmCompleter GoToReferences<CR>
+  nnoremap <Leader>t :YcmCompleter GetType<CR>
+endfunction
+
+function! SetupFireplaceKeys()
+  nmap <Leader>gd <Plug>FireplaceDjump
+  nmap <C-space> K
+endfunction
+
+function! SetGdGrKeys()
+  let g:ycm_filetypes = ["python", "rust", "typescript", "javascript", "c", "cpp"]
+  let g:fireplace_filetypes = ["clojure"]
+  autocmd FileType * if index(g:ycm_filetypes, &ft) >= 0 | call SetupYCMKeys() | endif
+  autocmd FileType * if index(g:fireplace_filetypes, &ft) >= 0 | call SetupFireplaceKeys() | endif
 endfunction
 
 " set <Leader>
@@ -161,9 +210,6 @@ let maplocalleader = "\\"
 " nav buffers
 nnoremap <Leader><PageUp> :bprevious<CR>
 nnoremap <Leader><PageDown> :bnext<CR>
-
-" 4spaces
-" nnoremap <Leader>4 :call Set4Spaces()<CR>
 
 " Quick open location list
 nnoremap <Leader>l :lopen<CR>
@@ -180,7 +226,6 @@ nnoremap <Leader>qa :tabclose<CR>
 if filereadable(expand("~/.vimrc.plug"))
   source ~/.vimrc.plug
 
-
   " SETTINGS FOR PLUGINS:
   let g:airline_theme='bubblegum'
   nnoremap <C-s> :update<Bar>:GitGutterAll<CR>
@@ -188,21 +233,7 @@ if filereadable(expand("~/.vimrc.plug"))
   let g:airline#extensions#tabline#enabled = 1
   let g:rooter_silent_chdir = 1
 
-  " jupyter-vim
-  let g:jupyter_mapkeys = 0
-  nnoremap <LocalLeader>cj :JupyterConnect<CR><CR>:JupyterCd %:p:h<CR>
-  nnoremap <LocalLeader>p<CR> vip:JupyterSendRange<CR>
-  nnoremap <LocalLeader><CR> :JupyterSendCell<CR>
-
-
   " python syntax highlighting
-  let g:python_highlight_string_formatting = 1
-  let g:python_highlight_string_format = 1
-  let g:python_highlight_string_templates = 1
-  let g:python_highlight_class_vars = 1
-  let g:python_highlight_builtins = 1
-  let g:python_highlight_exceptions = 1
-  let g:python_highlight_operators = 1
   let g:python_highlight_all = 1
 
   nnoremap <Leader>\ :NERDTreeToggle<CR>:NERDTreeRefreshRoot<CR><C-w>=
@@ -216,30 +247,35 @@ if filereadable(expand("~/.vimrc.plug"))
   " FZF
   nnoremap <C-p> :GFiles<CR>
 
+  " Deoplete
+  " not completing for python since we have YCM for that
+	autocmd FileType python
+	\ call deoplete#custom#buffer_option('auto_complete', v:false)
+  call deoplete#custom#option('keyword_patterns', {'clojure': '[\w!$%&*+/:<=>?@\^_~\-\.#]*'})
+
+  " Pear-tree
+  let g:pear_tree_repeatable_expand = 0
+  let g:pear_tree_pairs = {
+            \ '(': {'closer': ')'},
+            \ '[': {'closer': ']'},
+            \ '{': {'closer': '}'},
+            \ "'": {'closer': ""},
+            \ '"': {'closer': '"'}
+            \ }
+  let g:pear_tree_smart_openers = 1
+  let g:pear_tree_smart_closers = 1
+  let g:pear_tree_smart_backspace = 1
+
   " YCM
   " Do `rustup component add rls rust-analysis rust-src` to make rust completion work
-  let g:ycm_filetype_whitelist = {'python': 1}
+  let g:ycm_filetype_whitelist = {'python': 1, 'rust': 1, 'javascript': 1, 'typescript': 1}
+  let g:ycm_global_ycm_extra_conf = '~/.config/nvim/global_extra_conf.py'
   let g:ycm_clangd_binary_path = '/usr/bin/clangd'
   let g:ycm_add_preview_to_completeopt = 1
   let g:ycm_autoclose_preview_window_after_insertion = 0
   " let g:ycm_min_num_identifier_candidate_chars = 1
-  nnoremap <C-space> :YcmCompleter GetDoc<CR>
-  inoremap <C-space> <Esc>:YcmCompleter GetDoc<CR>a
-  nnoremap <Leader>gd :YcmCompleter GoToDefinition<CR>
-  nnoremap <Leader>gr :YcmCompleter GoToReferences<CR>
-  nnoremap <Leader>t :YcmCompleter GetType<CR>
 
-  let g:ycm_language_server =
-    \ [
-    \   {
-    \     'name': 'ruby',
-    \     'filetypes': [ 'ruby' ],
-    \     'port': 7658,
-    \     'project_root_files': [ 'Gemfile.lock' ]
-    \   },
-    \ ]
-
-  " ALE
+  " ALE : for linting and autoformatting
   nnoremap <Leader>[ :ALEPreviousWrap<CR>
   nnoremap <Leader>] :ALENextWrap<CR>
   nnoremap <Leader><F7> :ALEToggleBuffer<CR>
@@ -249,18 +285,31 @@ if filereadable(expand("~/.vimrc.plug"))
   \ 'python': ['mypy','flake8'],
   \ 'ruby': ['rubocop', 'ruby'],
   \ 'rust': ['cargo'],
+  \ 'clojure': ['clj-kondo'],
   \ }
   let g:ale_fixers = {
-  \   '*': [],
+  \   '*': ['trim_whitespace', 'remove_trailing_lines'],
   \   'javascript': ['eslint'],
   \   'python': ['black'],
+  \   'rust': ['rustfmt'],
   \}
 
+
+  ""---- REPL : Conjure or Slime -------
+  call SetREPLKeys()
+  ""------------------------------------
+
+  ""---- GetDoc/GotoDef/GetType etc ----
+  call SetGdGrKeys()
+  ""------------------------------------
+
+
   " colorscheme and modifications:
-  highlight ALEWarning ctermbg=8 cterm=underline
   call SetCustomDelek()
+  highlight ALEWarning ctermbg=8 cterm=underline
+  hi link YcmWarningSection ALEWarning
 else
-  colorscheme peachpuff
+  colorscheme delek
 endif
 
 " Set some global highlighting options
